@@ -18,7 +18,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     #outputs:
      # digests: ${{ steps.hash.outputs.digests }}
 
@@ -39,14 +39,15 @@ jobs:
       - name: Compile
         run: npm run build
         
-      - name: Generate SLSA subjects
-        id: hash-windows
+      - name: Generate SLSA subjects - ${{ runner.os }}
+        id: hash-linux
+        if: runner.os == 'Linux'
         run: |
+          set -euo pipefail
           # List the artifacts the provenance will refer to.
+          files=$(ls build*)
           # Generate the subjects (base64 encoded).
-          $hashes = Get-FileHash -Algorithm SHA256 public* | ForEach-Object {Write-Output "$($_.Hash) $($_.Path)"}
-          $base64 = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($hashes))
-          echo "::set-output name=digests::$base64"
+          echo "::set-output name=digests::$(sha256sum $files | base64 -w0)"
 
   provenance:
     needs: [build]
