@@ -19,8 +19,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    #outputs:
-     # digests: ${{ steps.hash.outputs.digests }}
+    outputs:
+     hashes: ${{ steps.hash.outputs.hashes }}
 
     steps:
       - uses: actions/checkout@v3
@@ -39,15 +39,12 @@ jobs:
       - name: Compile
         run: npm run build
         
-      - name: Generate SLSA subjects - ${{ runner.os }}
-        id: hash-linux
-        if: runner.os == 'Linux'
+      - name: Generate hashes
+        shell: bash
+        id: hash
         run: |
-          set -euo pipefail
-          # List the artifacts the provenance will refer to.
-          files=$(ls public*)
-          # Generate the subjects (base64 encoded).
-          echo "::set-output name=digests::$(sha256sum $files | base64 -w0)"
+          cd public
+          echo "hashes=$(find . -type f | xargs sha256sum | base64 -w0)" >> $GITHUB_OUTPUT
 
   provenance:
     needs: [build]
@@ -57,5 +54,5 @@ jobs:
       contents: write # To add assets to a release.
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.5.0
     with:
-      base64-subjects: "${{ needs.build.outputs.digests }}"
+      base64-subjects: "${{ needs.build.outputs.hashes }}"
       upload-assets: true # Optional: Upload to a new release
