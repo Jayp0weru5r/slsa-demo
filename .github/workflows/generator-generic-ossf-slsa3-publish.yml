@@ -39,28 +39,16 @@ jobs:
       - name: Compile
         run: npm run build
         
-      - name: Tar created files
+      - name: Generate SLSA subjects
+        id: hash-windows
+        shell: bash
         run: |
-          tar -czf wishlist.tar.gz public
-
-
-      # ========================================================
-      #
-      # Step 2: Add a step to generate the provenance subjects
-      #         as shown below. Update the sha256 sum arguments
-      #         to include all binaries that you generate
-      #         provenance for.
-      #
-      # ========================================================
-      - name: Generate subject for provenance
-        id: hash
-        run: |
-          set -euo pipefail
-
           # List the artifacts the provenance will refer to.
-          files="wishlist.tar.gz"
+          files=$(ls build*)
           # Generate the subjects (base64 encoded).
-          echo "hashes=$(sha256sum $files | base64 -w0)" >> "${GITHUB_OUTPUT}"
+          #$hashes = Get-FileHash -Algorithm SHA256 artifact* | ForEach-Object {Write-Output "$($_.Hash) $($_.Path)"}
+          #$base64 = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($hashes))
+          #echo "::set-output name=digests::$base64"
 
   provenance:
     needs: [build]
