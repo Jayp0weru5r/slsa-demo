@@ -18,9 +18,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    outputs:
-      digests: ${{ steps.hash.outputs.digests }}
+    runs-on: windows-latest
+    #outputs:
+     # digests: ${{ steps.hash.outputs.digests }}
 
     steps:
       - uses: actions/checkout@v3
@@ -41,7 +41,6 @@ jobs:
         
       - name: Generate SLSA subjects
         id: hash-windows
-        shell: bash
         run: |
           # List the artifacts the provenance will refer to.
           # Generate the subjects (base64 encoded).
